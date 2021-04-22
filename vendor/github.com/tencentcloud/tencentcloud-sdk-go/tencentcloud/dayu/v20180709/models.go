@@ -2007,6 +2007,64 @@ func (r *DescribeBasicDeviceThresholdResponse) FromJsonString(s string) error {
     return json.Unmarshal([]byte(s), &r)
 }
 
+type DescribeBizHttpStatusRequest struct {
+	*tchttp.BaseRequest
+
+	// 大禹子产品代号（bgpip表示高防IP）
+	Business *string `json:"Business,omitempty" name:"Business"`
+
+	// 资源Id
+	Id *string `json:"Id,omitempty" name:"Id"`
+
+	// 统计周期，可取值300，1800，3600， 21600，86400，单位秒
+	Period *int64 `json:"Period,omitempty" name:"Period"`
+
+	// 统计开始时间
+	StartTime *string `json:"StartTime,omitempty" name:"StartTime"`
+
+	// 统计结束时间
+	EndTime *string `json:"EndTime,omitempty" name:"EndTime"`
+
+	// 统计方式，仅支持sum
+	Statistics *string `json:"Statistics,omitempty" name:"Statistics"`
+
+	// 协议及端口列表，协议可取值TCP, UDP, HTTP, HTTPS，仅统计纬度为连接数时有效
+	ProtoInfo []*ProtocolPort `json:"ProtoInfo,omitempty" name:"ProtoInfo" list`
+
+	// 特定域名查询
+	Domain *string `json:"Domain,omitempty" name:"Domain"`
+}
+
+func (r *DescribeBizHttpStatusRequest) ToJsonString() string {
+    b, _ := json.Marshal(r)
+    return string(b)
+}
+
+func (r *DescribeBizHttpStatusRequest) FromJsonString(s string) error {
+    return json.Unmarshal([]byte(s), &r)
+}
+
+type DescribeBizHttpStatusResponse struct {
+	*tchttp.BaseResponse
+	Response *struct {
+
+		// 业务流量http状态码统计数据
+		HttpStatusMap *HttpStatusMap `json:"HttpStatusMap,omitempty" name:"HttpStatusMap"`
+
+		// 唯一请求 ID，每次请求都会返回。定位问题时需要提供该次请求的 RequestId。
+		RequestId *string `json:"RequestId,omitempty" name:"RequestId"`
+	} `json:"Response"`
+}
+
+func (r *DescribeBizHttpStatusResponse) ToJsonString() string {
+    b, _ := json.Marshal(r)
+    return string(b)
+}
+
+func (r *DescribeBizHttpStatusResponse) FromJsonString(s string) error {
+    return json.Unmarshal([]byte(s), &r)
+}
+
 type DescribeBizTrendRequest struct {
 	*tchttp.BaseRequest
 
@@ -4222,7 +4280,7 @@ type DescribeResourceListRequest struct {
 	// 资源名称搜索，可选，当不为空字符串时表示按名称搜索资源；
 	Name *string `json:"Name,omitempty" name:"Name"`
 
-	// IP搜索列表，可选，当不为空时表示安装IP搜索资源；
+	// IP搜索列表，可选，当不为空时表示按照IP搜索资源；
 	IpList []*string `json:"IpList,omitempty" name:"IpList" list`
 
 	// 资源状态搜索列表，可选，取值为[0（运行中）, 1（清洗中）, 2（封堵中）]，当填空数组时不进行状态搜索；
@@ -4274,7 +4332,6 @@ type DescribeResourceListResponse struct {
 	// "Key": "Type" 此字段弃用
 	// "Key": "ElasticLimit" 表示资源实例的弹性防护值
 	// "Key": "DDoSAI" 表示资源实例的DDoS AI防护开关
-	// "Key": "Bandwidth" 表示资源实例的保底防护值
 	// "Key": "OverloadCount" 表示资源实例受到超过弹性防护值的次数
 	// "Key": "Status" 表示资源实例的状态(idle:运行中, attacking:攻击中, blocking:封堵中, isolate:隔离中)
 	// "Key": "Lbid" 此字段弃用
@@ -4291,6 +4348,10 @@ type DescribeResourceListResponse struct {
 	// "Key": "DefendStatus" 表示资源实例的DDoS防护状态(防护开启或临时关闭)
 	// "Key": "UndefendExpire" 表示资源实例的DDoS防护临时关闭结束时间
 	// "Key": "Tgw" 表示资源实例是否是新资源
+	// "Key": "Bandwidth" 表示资源实例的保底防护值，只针对高防包和高防IP
+	// "Key": "DdosMax" 表示资源实例的保底防护值，只针对高防IP专业版
+	// "Key": "GFBandwidth" 表示资源实例的保底业务带宽，只针对高防IP
+	// "Key": "ServiceBandwidth" 表示资源实例的保底业务带宽，只针对高防IP专业版
 		ServicePacks []*KeyValueRecord `json:"ServicePacks,omitempty" name:"ServicePacks" list`
 
 		// 大禹子产品代号（bgp表示独享包；bgp-multip表示共享包；bgpip表示高防IP；net表示高防IP专业版）
@@ -4820,6 +4881,39 @@ func (r *DescribleRegionCountResponse) ToJsonString() string {
 
 func (r *DescribleRegionCountResponse) FromJsonString(s string) error {
     return json.Unmarshal([]byte(s), &r)
+}
+
+type HttpStatusMap struct {
+
+	// http2xx状态码
+	Http2xx []*float64 `json:"Http2xx,omitempty" name:"Http2xx" list`
+
+	// http3xx状态码
+	Http3xx []*float64 `json:"Http3xx,omitempty" name:"Http3xx" list`
+
+	// http404状态码
+	Http404 []*float64 `json:"Http404,omitempty" name:"Http404" list`
+
+	// http4xx状态码
+	Http4xx []*float64 `json:"Http4xx,omitempty" name:"Http4xx" list`
+
+	// http5xx状态码
+	Http5xx []*float64 `json:"Http5xx,omitempty" name:"Http5xx" list`
+
+	// http2xx回源状态码
+	SourceHttp2xx []*float64 `json:"SourceHttp2xx,omitempty" name:"SourceHttp2xx" list`
+
+	// http3xx回源状态码
+	SourceHttp3xx []*float64 `json:"SourceHttp3xx,omitempty" name:"SourceHttp3xx" list`
+
+	// http404回源状态码
+	SourceHttp404 []*float64 `json:"SourceHttp404,omitempty" name:"SourceHttp404" list`
+
+	// http4xx回源状态码
+	SourceHttp4xx []*float64 `json:"SourceHttp4xx,omitempty" name:"SourceHttp4xx" list`
+
+	// http5xx回源状态码
+	SourceHttp5xx []*float64 `json:"SourceHttp5xx,omitempty" name:"SourceHttp5xx" list`
 }
 
 type IpBlackWhite struct {

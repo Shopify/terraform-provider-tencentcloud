@@ -110,6 +110,22 @@ type AIRecognitionTemplateItem struct {
 	UpdateTime *string `json:"UpdateTime,omitempty" name:"UpdateTime"`
 }
 
+type AccelerateAreaInfo struct {
+
+	// 加速地区，可选值：
+	// <li>Chinese Mainland：中国境内（不包含港澳台）。</li>
+	// <li>Outside Chinese Mainland：中国境外。</li>
+	Area *string `json:"Area,omitempty" name:"Area"`
+
+	// 腾讯禁用原因，可选值：
+	// <li>ForLegalReasons：因法律原因导致关闭加速；</li>
+	// <li>ForOverdueBills：因欠费停服导致关闭加速。</li>
+	TencentDisableReason *string `json:"TencentDisableReason,omitempty" name:"TencentDisableReason"`
+
+	// 加速域名对应的 CNAME 域名。
+	TencentEdgeDomain *string `json:"TencentEdgeDomain,omitempty" name:"TencentEdgeDomain"`
+}
+
 type AdaptiveDynamicStreamingInfoItem struct {
 
 	// 转自适应码流规格。
@@ -132,6 +148,9 @@ type AdaptiveDynamicStreamingTaskInput struct {
 
 	// 水印列表，支持多张图片或文字水印，最大可支持 10 张。
 	WatermarkSet []*WatermarkInput `json:"WatermarkSet,omitempty" name:"WatermarkSet" list`
+
+	// 字幕列表，元素为字幕 ID，支持多个字幕，最大可支持10个。
+	SubtitleSet []*string `json:"SubtitleSet,omitempty" name:"SubtitleSet" list`
 }
 
 type AdaptiveDynamicStreamingTemplate struct {
@@ -1738,6 +1757,54 @@ type AsrWordsConfigureInfoForUpdate struct {
 	LabelSet []*string `json:"LabelSet,omitempty" name:"LabelSet" list`
 }
 
+type AttachMediaSubtitlesRequest struct {
+	*tchttp.BaseRequest
+
+	// 媒体文件唯一标识。
+	FileId *string `json:"FileId,omitempty" name:"FileId"`
+
+	// 操作。取值如下：
+	// <li>Attach：关联字幕。</li>
+	// <li>Detach：解除关联字幕。</li>
+	Operation *string `json:"Operation,omitempty" name:"Operation"`
+
+	// [转自适应码流模板号](https://cloud.tencent.com/document/product/266/34071#zsy)。
+	AdaptiveDynamicStreamingDefinition *uint64 `json:"AdaptiveDynamicStreamingDefinition,omitempty" name:"AdaptiveDynamicStreamingDefinition"`
+
+	// 字幕的唯一标识。
+	SubtitleIds []*string `json:"SubtitleIds,omitempty" name:"SubtitleIds" list`
+
+	// 点播[子应用](/document/product/266/14574) ID 。如果要访问子应用中的资源，则将该字段填写为子应用 ID；否则无需填写该字段。
+	SubAppId *uint64 `json:"SubAppId,omitempty" name:"SubAppId"`
+}
+
+func (r *AttachMediaSubtitlesRequest) ToJsonString() string {
+    b, _ := json.Marshal(r)
+    return string(b)
+}
+
+func (r *AttachMediaSubtitlesRequest) FromJsonString(s string) error {
+    return json.Unmarshal([]byte(s), &r)
+}
+
+type AttachMediaSubtitlesResponse struct {
+	*tchttp.BaseResponse
+	Response *struct {
+
+		// 唯一请求 ID，每次请求都会返回。定位问题时需要提供该次请求的 RequestId。
+		RequestId *string `json:"RequestId,omitempty" name:"RequestId"`
+	} `json:"Response"`
+}
+
+func (r *AttachMediaSubtitlesResponse) ToJsonString() string {
+    b, _ := json.Marshal(r)
+    return string(b)
+}
+
+func (r *AttachMediaSubtitlesResponse) FromJsonString(s string) error {
+    return json.Unmarshal([]byte(s), &r)
+}
+
 type AudioTemplateInfo struct {
 
 	// 音频流的编码格式。
@@ -2113,6 +2180,12 @@ type ComposeMediaTask struct {
 	// 原始视频的元信息。
 	// 注意：此字段可能返回 null，表示取不到有效值。
 	MetaData *MediaMetaData `json:"MetaData,omitempty" name:"MetaData"`
+
+	// 来源上下文，用于透传用户请求信息，任务流状态变更回调将返回该字段值，最长 1000 个字符。
+	SessionContext *string `json:"SessionContext,omitempty" name:"SessionContext"`
+
+	// 用于去重的识别码，如果七天内曾有过相同的识别码的请求，则本次的请求会返回错误。最长 50 个字符，不带或者带空字符串表示不做去重。
+	SessionId *string `json:"SessionId,omitempty" name:"SessionId"`
 }
 
 type ComposeMediaTaskInput struct {
@@ -4758,6 +4831,43 @@ func (r *DescribeDailyPlayStatFileListResponse) FromJsonString(s string) error {
     return json.Unmarshal([]byte(s), &r)
 }
 
+type DescribeDrmDataKeyRequest struct {
+	*tchttp.BaseRequest
+
+	// 加密后的数据密钥列表，最大支持10个。
+	EdkList []*string `json:"EdkList,omitempty" name:"EdkList" list`
+}
+
+func (r *DescribeDrmDataKeyRequest) ToJsonString() string {
+    b, _ := json.Marshal(r)
+    return string(b)
+}
+
+func (r *DescribeDrmDataKeyRequest) FromJsonString(s string) error {
+    return json.Unmarshal([]byte(s), &r)
+}
+
+type DescribeDrmDataKeyResponse struct {
+	*tchttp.BaseResponse
+	Response *struct {
+
+		// 密钥列表，包含加密的数据密钥。
+		KeyList []*SimpleAesEdkPair `json:"KeyList,omitempty" name:"KeyList" list`
+
+		// 唯一请求 ID，每次请求都会返回。定位问题时需要提供该次请求的 RequestId。
+		RequestId *string `json:"RequestId,omitempty" name:"RequestId"`
+	} `json:"Response"`
+}
+
+func (r *DescribeDrmDataKeyResponse) ToJsonString() string {
+    b, _ := json.Marshal(r)
+    return string(b)
+}
+
+func (r *DescribeDrmDataKeyResponse) FromJsonString(s string) error {
+    return json.Unmarshal([]byte(s), &r)
+}
+
 type DescribeEventsStateRequest struct {
 	*tchttp.BaseRequest
 
@@ -5071,6 +5181,40 @@ func (r *DescribePersonSamplesResponse) ToJsonString() string {
 }
 
 func (r *DescribePersonSamplesResponse) FromJsonString(s string) error {
+    return json.Unmarshal([]byte(s), &r)
+}
+
+type DescribePrepaidProductsRequest struct {
+	*tchttp.BaseRequest
+}
+
+func (r *DescribePrepaidProductsRequest) ToJsonString() string {
+    b, _ := json.Marshal(r)
+    return string(b)
+}
+
+func (r *DescribePrepaidProductsRequest) FromJsonString(s string) error {
+    return json.Unmarshal([]byte(s), &r)
+}
+
+type DescribePrepaidProductsResponse struct {
+	*tchttp.BaseResponse
+	Response *struct {
+
+		// 购买的预付费商品实例列表。
+		ProductInstanceSet []*ProductInstance `json:"ProductInstanceSet,omitempty" name:"ProductInstanceSet" list`
+
+		// 唯一请求 ID，每次请求都会返回。定位问题时需要提供该次请求的 RequestId。
+		RequestId *string `json:"RequestId,omitempty" name:"RequestId"`
+	} `json:"Response"`
+}
+
+func (r *DescribePrepaidProductsResponse) ToJsonString() string {
+    b, _ := json.Marshal(r)
+    return string(b)
+}
+
+func (r *DescribePrepaidProductsResponse) FromJsonString(s string) error {
     return json.Unmarshal([]byte(s), &r)
 }
 
@@ -5734,6 +5878,56 @@ func (r *DescribeTranscodeTemplatesResponse) FromJsonString(s string) error {
     return json.Unmarshal([]byte(s), &r)
 }
 
+type DescribeVodDomainsRequest struct {
+	*tchttp.BaseRequest
+
+	// 域名列表。当该字段不填时，则默认列出所有域名信息。本字段字段限制如下：
+	// <li>域名个数度最大为 20。</li>
+	Domains []*string `json:"Domains,omitempty" name:"Domains" list`
+
+	// 分页拉取的最大返回结果数。默认值：20。
+	Limit *uint64 `json:"Limit,omitempty" name:"Limit"`
+
+	// 分页拉取的起始偏移量。默认值：0。
+	Offset *uint64 `json:"Offset,omitempty" name:"Offset"`
+
+	// 点播[子应用](/document/product/266/14574) ID。如果要访问子应用中的资源，则将该字段填写为子应用 ID；否则无需填写该字段。
+	SubAppId *uint64 `json:"SubAppId,omitempty" name:"SubAppId"`
+}
+
+func (r *DescribeVodDomainsRequest) ToJsonString() string {
+    b, _ := json.Marshal(r)
+    return string(b)
+}
+
+func (r *DescribeVodDomainsRequest) FromJsonString(s string) error {
+    return json.Unmarshal([]byte(s), &r)
+}
+
+type DescribeVodDomainsResponse struct {
+	*tchttp.BaseResponse
+	Response *struct {
+
+		// 域名总数量。
+		TotalCount *uint64 `json:"TotalCount,omitempty" name:"TotalCount"`
+
+		// 域名信息列表。
+		DomainSet []*DomainDetailInfo `json:"DomainSet,omitempty" name:"DomainSet" list`
+
+		// 唯一请求 ID，每次请求都会返回。定位问题时需要提供该次请求的 RequestId。
+		RequestId *string `json:"RequestId,omitempty" name:"RequestId"`
+	} `json:"Response"`
+}
+
+func (r *DescribeVodDomainsResponse) ToJsonString() string {
+    b, _ := json.Marshal(r)
+    return string(b)
+}
+
+func (r *DescribeVodDomainsResponse) FromJsonString(s string) error {
+    return json.Unmarshal([]byte(s), &r)
+}
+
 type DescribeWatermarkTemplatesRequest struct {
 	*tchttp.BaseRequest
 
@@ -5853,6 +6047,45 @@ func (r *DescribeWordSamplesResponse) ToJsonString() string {
 
 func (r *DescribeWordSamplesResponse) FromJsonString(s string) error {
     return json.Unmarshal([]byte(s), &r)
+}
+
+type DomainDetailInfo struct {
+
+	// 域名名称。
+	Domain *string `json:"Domain,omitempty" name:"Domain"`
+
+	// 加速地区信息。
+	// 注意：此字段可能返回 null，表示取不到有效值。
+	AccelerateAreaInfos []*AccelerateAreaInfo `json:"AccelerateAreaInfos,omitempty" name:"AccelerateAreaInfos" list`
+
+	// 部署状态，取值有：
+	// <li>Online：上线；</li>
+	// <li>Deploying：部署中；</li>
+	// <li>Locked: 锁定中，出现该状态时，无法对该域名进行部署变更。</li>
+	DeployStatus *string `json:"DeployStatus,omitempty" name:"DeployStatus"`
+
+	// HTTPS 配置信息。
+	// 注意：此字段可能返回 null，表示取不到有效值。
+	HTTPSConfig *DomainHTTPSConfig `json:"HTTPSConfig,omitempty" name:"HTTPSConfig"`
+
+	// [Key 防盗链](https://cloud.tencent.com/document/product/266/14047)配置信息。
+	// 注意：此字段可能返回 null，表示取不到有效值。
+	UrlSignatureAuthPolicy *UrlSignatureAuthPolicy `json:"UrlSignatureAuthPolicy,omitempty" name:"UrlSignatureAuthPolicy"`
+
+	// [Referer 防盗链](https://cloud.tencent.com/document/product/266/14046)配置信息。
+	// 注意：此字段可能返回 null，表示取不到有效值。
+	RefererAuthPolicy *RefererAuthPolicy `json:"RefererAuthPolicy,omitempty" name:"RefererAuthPolicy"`
+
+	// 域名添加到腾讯云点播系统中的时间。
+	// <li>格式按照 ISO 8601标准表示，详见 [ISO 日期格式说明](https://cloud.tencent.com/document/product/266/11732#iso-.E6.97.A5.E6.9C.9F.E6.A0.BC.E5.BC.8F)。</li>
+	CreateTime *string `json:"CreateTime,omitempty" name:"CreateTime"`
+}
+
+type DomainHTTPSConfig struct {
+
+	// 证书过期时间。
+	// <li>格式按照 ISO 8601标准表示，详见 [ISO 日期格式说明](https://cloud.tencent.com/document/product/266/11732#iso-.E6.97.A5.E6.9C.9F.E6.A0.BC.E5.BC.8F)。</li>
+	CertExpireTime *string `json:"CertExpireTime,omitempty" name:"CertExpireTime"`
 }
 
 type DrmStreamingsInfo struct {
@@ -6900,7 +7133,7 @@ type MediaBasicInfo struct {
 	// 注意：此字段可能返回 null，表示取不到有效值。
 	SourceInfo *MediaSourceData `json:"SourceInfo,omitempty" name:"SourceInfo"`
 
-	// 媒体文件存储地区，如 ap-guangzhou，参见[地域列表](https://cloud.tencent.com/document/api/213/15692#.E5.9C.B0.E5.9F.9F.E5.88.97.E8.A1.A8)。
+	// 媒体文件存储地区，如 ap-chongqing，参见[地域列表](https://cloud.tencent.com/document/product/266/9760#.E5.B7.B2.E6.94.AF.E6.8C.81.E5.9C.B0.E5.9F.9F.E5.88.97.E8.A1.A8)。
 	StorageRegion *string `json:"StorageRegion,omitempty" name:"StorageRegion"`
 
 	// 媒体文件的标签信息。
@@ -7162,6 +7395,10 @@ type MediaInfo struct {
 	// 小程序审核信息。
 	// 注意：此字段可能返回 null，表示取不到有效值。
 	MiniProgramReviewInfo *MediaMiniProgramReviewInfo `json:"MiniProgramReviewInfo,omitempty" name:"MiniProgramReviewInfo"`
+
+	// 字幕信息。
+	// 注意：此字段可能返回 null，表示取不到有效值。
+	SubtitleInfo *MediaSubtitleInfo `json:"SubtitleInfo,omitempty" name:"SubtitleInfo"`
 
 	// 媒体文件唯一标识 ID。
 	FileId *string `json:"FileId,omitempty" name:"FileId"`
@@ -7576,6 +7813,58 @@ type MediaSourceData struct {
 
 	// 用户创建文件时透传的字段
 	SourceContext *string `json:"SourceContext,omitempty" name:"SourceContext"`
+}
+
+type MediaSubtitleInfo struct {
+
+	// 字幕信息列表。
+	SubtitleSet []*MediaSubtitleItem `json:"SubtitleSet,omitempty" name:"SubtitleSet" list`
+}
+
+type MediaSubtitleInput struct {
+
+	// 字幕名字，长度限制：64 个字符。
+	Name *string `json:"Name,omitempty" name:"Name"`
+
+	// 字幕语言。常见的取值如下：
+	// <li>cn：中文</li>
+	// <li>ja：日文</li>
+	// <li>en-US：英文</li>
+	// 其他取值参考 [RFC5646](https://tools.ietf.org/html/rfc5646)
+	Language *string `json:"Language,omitempty" name:"Language"`
+
+	// 字幕格式。取值范围如下：
+	// <li>vtt</li>
+	Format *string `json:"Format,omitempty" name:"Format"`
+
+	// 字幕内容，进行 [Base64](https://tools.ietf.org/html/rfc4648) 编码后的字符串。
+	Content *string `json:"Content,omitempty" name:"Content"`
+
+	// 字幕的唯一标识。长度不能超过16个字符，可以使用大小写字母、数字、下划线（_）或横杠（-）。不能与媒资文件中现有字幕的唯一标识重复。
+	Id *string `json:"Id,omitempty" name:"Id"`
+}
+
+type MediaSubtitleItem struct {
+
+	// 字幕的唯一标识。
+	Id *string `json:"Id,omitempty" name:"Id"`
+
+	// 字幕名字。
+	Name *string `json:"Name,omitempty" name:"Name"`
+
+	// 字幕语言。常见的取值如下：
+	// <li>cn：中文</li>
+	// <li>ja：日文</li>
+	// <li>en-US：英文</li>
+	// 其他取值参考 [RFC5646](https://tools.ietf.org/html/rfc5646)
+	Language *string `json:"Language,omitempty" name:"Language"`
+
+	// 字幕格式。取值范围如下：
+	// <li>vtt</li>
+	Format *string `json:"Format,omitempty" name:"Format"`
+
+	// 字幕 URL。
+	Url *string `json:"Url,omitempty" name:"Url"`
 }
 
 type MediaTrack struct {
@@ -8182,6 +8471,16 @@ type ModifyMediaInfoRequest struct {
 	// 同一个请求里，ClearTags 与 AddTags 不能同时出现。
 	ClearTags *int64 `json:"ClearTags,omitempty" name:"ClearTags"`
 
+	// 新增一组字幕。单个媒体文件最多 16 个字幕。同一个请求中，AddSubtitles 中指定的字幕 Id 必须与 DeleteSubtitleIds 都不相同。
+	AddSubtitles []*MediaSubtitleInput `json:"AddSubtitles,omitempty" name:"AddSubtitles" list`
+
+	// 待删除字幕的唯一标识。同一个请求中，AddSubtitles 中指定的字幕 Id 必须与 DeleteSubtitleIds 都不相同。
+	DeleteSubtitleIds []*string `json:"DeleteSubtitleIds,omitempty" name:"DeleteSubtitleIds" list`
+
+	// 取值 1 表示清空媒体文件所有的字幕信息，其他值无意义。
+	// 同一个请求里，ClearSubtitles 与 AddSubtitles不能同时出现。
+	ClearSubtitles *int64 `json:"ClearSubtitles,omitempty" name:"ClearSubtitles"`
+
 	// 点播[子应用](/document/product/266/14574) ID 。如果要访问子应用中的资源，则将该字段填写为子应用 ID；否则无需填写该字段。
 	SubAppId *uint64 `json:"SubAppId,omitempty" name:"SubAppId"`
 }
@@ -8202,6 +8501,9 @@ type ModifyMediaInfoResponse struct {
 		// 新的视频封面 URL。
 	// * 注意：仅当请求携带 CoverData 时此返回值有效。 *
 		CoverUrl *string `json:"CoverUrl,omitempty" name:"CoverUrl"`
+
+		// 新增的字幕信息。
+		AddedSubtitleSet []*MediaSubtitleItem `json:"AddedSubtitleSet,omitempty" name:"AddedSubtitleSet" list`
 
 		// 唯一请求 ID，每次请求都会返回。定位问题时需要提供该次请求的 RequestId。
 		RequestId *string `json:"RequestId,omitempty" name:"RequestId"`
@@ -9582,6 +9884,72 @@ func (r *ProcessMediaResponse) FromJsonString(s string) error {
     return json.Unmarshal([]byte(s), &r)
 }
 
+type ProductInstance struct {
+
+	// 预付费商品实例类型，取值有：
+	// <li>StarterPackage：点播新手包。</li>
+	// <li>MiniProgramPlugin：点播小程序插件。</li>
+	// <li>ResourcePackage：点播资源包。</li>
+	ProductType *string `json:"ProductType,omitempty" name:"ProductType"`
+
+	// 资源包实例起始日期。使用 [ISO 日期格式](https://cloud.tencent.com/document/product/266/11732#iso-.E6.97.A5.E6.9C.9F.E6.A0.BC.E5.BC.8F)。
+	StartTime *string `json:"StartTime,omitempty" name:"StartTime"`
+
+	// 资源包实例过期日期。使用 [ISO 日期格式](https://cloud.tencent.com/document/product/266/11732#iso-.E6.97.A5.E6.9C.9F.E6.A0.BC.E5.BC.8F)。
+	ExpireTime *string `json:"ExpireTime,omitempty" name:"ExpireTime"`
+
+	// 资源包实例ID。对应每个资源包，系统会分配相应的资源。续费或者升级资源包时，需要带上这个资源ID。
+	ProductInstanceId *string `json:"ProductInstanceId,omitempty" name:"ProductInstanceId"`
+
+	// 系统最近一次扣除资源包的日期。使用 [ISO 日期格式](https://cloud.tencent.com/document/product/266/11732#iso-.E6.97.A5.E6.9C.9F.E6.A0.BC.E5.BC.8F)。
+	LastConsumeDate *string `json:"LastConsumeDate,omitempty" name:"LastConsumeDate"`
+
+	// 资源包绑定 License 状态，取值有：
+	// <li>0：未绑定。</li>
+	// <li>1：已绑定。</li>
+	BindStatus *int64 `json:"BindStatus,omitempty" name:"BindStatus"`
+
+	// 预付费资源包实例中包含的资源包列表。
+	ProductInstanceResourceSet []*ProductInstanceRecource `json:"ProductInstanceResourceSet,omitempty" name:"ProductInstanceResourceSet" list`
+
+	// 资源包实例的状态，取值有：
+	// <li>Effective：生效，可用于计费抵扣。</li>
+	// <li>Isolated：隔离，不可用于计费抵扣。</li>
+	ProductInstanceStatus *string `json:"ProductInstanceStatus,omitempty" name:"ProductInstanceStatus"`
+
+	// 资源包实例的可退还状态，取值有：
+	// <li>FullRefund：可全额退款。</li>
+	// <li>Denied：不可退款。</li>
+	RefundStatus *string `json:"RefundStatus,omitempty" name:"RefundStatus"`
+}
+
+type ProductInstanceRecource struct {
+
+	// 资源类型。
+	// <li>Storage：存储资源包。</li>
+	// <li>Traffic：流量资源包。</li>
+	// <li>Transcode：普通转码资源包。</li>
+	// <li>TESHD：极速高清转码资源包。</li>
+	// <li>Review：视频审核转码资源包。</li>
+	ResourceType *string `json:"ResourceType,omitempty" name:"ResourceType"`
+
+	// 资源包额度。
+	// <li>视频存储资源包，单位为字节。</li>
+	// <li>视频转码资源包，单位为秒。</li>
+	// <li>视频审核资源包，单位为秒。</li>
+	// <li>视频极速高清资源包，单位为秒。</li>
+	// <li>视频加速资源包，单位为字节。</li>
+	Amount *int64 `json:"Amount,omitempty" name:"Amount"`
+
+	// 资源包余量。
+	// <li>视频存储资源包，单位为字节。</li>
+	// <li>视频转码资源包，单位为秒。</li>
+	// <li>视频审核资源包，单位为秒。</li>
+	// <li>视频极速高清资源包，单位为秒。</li>
+	// <li>视频加速资源包，单位为字节。</li>
+	Left *int64 `json:"Left,omitempty" name:"Left"`
+}
+
 type ProhibitedAsrReviewTemplateInfo struct {
 
 	// 语音违禁任务开关，可选值：
@@ -9851,6 +10219,27 @@ func (r *PushUrlCacheResponse) FromJsonString(s string) error {
     return json.Unmarshal([]byte(s), &r)
 }
 
+type RefererAuthPolicy struct {
+
+	// [Referer 防盗链](https://cloud.tencent.com/document/product/266/14046)设置状态，可选值：
+	// <li>Enabled: 启用；</li>
+	// <li>Disabled: 禁用。</li>
+	Status *string `json:"Status,omitempty" name:"Status"`
+
+	// Referer 校验类型，可选值：
+	// <li>Black: 黑名单方式校验；</li>
+	// <li>White:白名单方式校验。</li>
+	AuthType *string `json:"AuthType,omitempty" name:"AuthType"`
+
+	// 用于校验的 Referer 名单。
+	Referers []*string `json:"Referers,omitempty" name:"Referers" list`
+
+	// 是否允许空 Referer 访问本域名，可选值：
+	// <li>Yes: 是；</li>
+	// <li>No: 否。</li>
+	BlankRefererAllowed *string `json:"BlankRefererAllowed,omitempty" name:"BlankRefererAllowed"`
+}
+
 type ResetProcedureTemplateRequest struct {
 	*tchttp.BaseRequest
 
@@ -10072,6 +10461,11 @@ type SearchMediaRequest struct {
 	// <li>miniProgramReviewInfo（小程序审核信息）。</li>
 	Filters []*string `json:"Filters,omitempty" name:"Filters" list`
 
+	// 媒体文件存储地区，如 ap-chongqing，参见[地域列表](https://cloud.tencent.com/document/product/266/9760#.E5.B7.B2.E6.94.AF.E6.8C.81.E5.9C.B0.E5.9F.9F.E5.88.97.E8.A1.A8)。
+	// <li>单个存储地区长度限制：20个字符。</li>
+	// <li>数组长度限制：20。</li>
+	StorageRegions []*string `json:"StorageRegions,omitempty" name:"StorageRegions" list`
+
 	// 点播[子应用](/document/product/266/14574) ID。如果要访问子应用中的资源，则将该字段填写为子应用 ID；否则无需填写该字段。
 	SubAppId *uint64 `json:"SubAppId,omitempty" name:"SubAppId"`
 
@@ -10154,6 +10548,15 @@ type SegmentConfigureInfoForUpdate struct {
 	// <li>ON：开启智能视频拆条识别任务；</li>
 	// <li>OFF：关闭智能视频拆条识别任务。</li>
 	Switch *string `json:"Switch,omitempty" name:"Switch"`
+}
+
+type SimpleAesEdkPair struct {
+
+	// 加密后的数据密钥。
+	Edk *string `json:"Edk,omitempty" name:"Edk"`
+
+	// 数据密钥。返回的数据密钥 DK 为 Base64 编码字符串。
+	Dk *string `json:"Dk,omitempty" name:"Dk"`
 }
 
 type SimpleHlsClipRequest struct {
@@ -11132,6 +11535,17 @@ type TransitionOpertion struct {
 	// </li>
 	// </ul>
 	Type *string `json:"Type,omitempty" name:"Type"`
+}
+
+type UrlSignatureAuthPolicy struct {
+
+	// [Key 防盗链](https://cloud.tencent.com/document/product/266/14047)设置状态，可选值：
+	// <li>Enabled: 启用；</li>
+	// <li>Disabled: 禁用。</li>
+	Status *string `json:"Status,omitempty" name:"Status"`
+
+	// [Key 防盗链](https://cloud.tencent.com/document/product/266/14047)中用于生成签名的密钥。
+	EncryptedKey *string `json:"EncryptedKey,omitempty" name:"EncryptedKey"`
 }
 
 type UserDefineAsrTextReviewTemplateInfo struct {

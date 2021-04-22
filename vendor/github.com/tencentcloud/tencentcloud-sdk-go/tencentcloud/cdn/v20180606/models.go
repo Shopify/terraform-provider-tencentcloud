@@ -752,9 +752,9 @@ type CacheConfigCache struct {
 	// 注意：此字段可能返回 null，表示取不到有效值。
 	IgnoreCacheControl *string `json:"IgnoreCacheControl,omitempty" name:"IgnoreCacheControl"`
 
-	// 忽略源站的 Set-Cookie 头部
-	// on：开启
-	// off：关闭
+	// 当源站返回Set-Cookie头部时，节点是否缓存该头部及body
+	// on：开启，不缓存该头部及body
+	// off：关闭，遵循用户自定义的节点缓存规则
 	// 默认为关闭状态
 	// 注意：此字段可能返回 null，表示取不到有效值。
 	IgnoreSetCookie *string `json:"IgnoreSetCookie,omitempty" name:"IgnoreSetCookie"`
@@ -1149,11 +1149,11 @@ type CreateEdgePackTaskRequest struct {
 	// apk 源文件的存储路径, 如 /apk/xxxx.apk
 	CosUriFrom *string `json:"CosUriFrom,omitempty" name:"CosUriFrom"`
 
-	// 拓展之后的 apk 目标存储路径,如 /out/xxxx.apk
-	CosUriTo *string `json:"CosUriTo,omitempty" name:"CosUriTo"`
-
 	// BlockID 的值, WALLE为1903654775(0x71777777)，VasDolly为2282837503(0x881155ff),传0或不传时默认为 WALLE 方案
 	BlockID *uint64 `json:"BlockID,omitempty" name:"BlockID"`
+
+	// 拓展之后的 apk 目标存储路径,如 /out/xxxx.apk
+	CosUriTo *string `json:"CosUriTo,omitempty" name:"CosUriTo"`
 }
 
 func (r *CreateEdgePackTaskRequest) ToJsonString() string {
@@ -1578,7 +1578,10 @@ type DescribeCdnDataRequest struct {
 	// flux：流量，单位为 byte
 	// bandwidth：带宽，单位为 bps
 	// request：请求数，单位为 次
-	// fluxHitRate：流量命中率，单位为 %
+	// hitRequest：命中请求数，单位为 次
+	// requestHitRate：请求命中率，单位为 %，保留小数点后两位
+	// hitFlux：命中流量，单位为byte
+	// fluxHitRate：流量命中率，单位为 %，保留小数点后两位
 	// statusCode：状态码，返回 2xx、3xx、4xx、5xx 汇总数据，单位为 个
 	// 2xx：返回 2xx 状态码汇总及各 2 开头状态码数据，单位为 个
 	// 3xx：返回 3xx 状态码汇总及各 3 开头状态码数据，单位为 个
@@ -3757,8 +3760,9 @@ type Hsts struct {
 type HttpHeaderPathRule struct {
 
 	// http 头部设置方式
-	// add：添加头部，若已存在头部，则会存在重复头部
-	// del：删除头部
+	// set：设置。变更指定头部参数的取值为设置后的值；若设置的头部不存在，则会增加该头部；若存在多个重复的头部参数，则会全部变更，同时合并为一个头部。
+	// del：删除。删除指定的头部参数
+	// add：增加。增加指定的头部参数，默认允许重复添加，即重复添加相同的头部（注：重复添加可能会影响浏览器响应，请优先使用set操作）
 	// 注意：此字段可能返回 null，表示取不到有效值。
 	HeaderMode *string `json:"HeaderMode,omitempty" name:"HeaderMode"`
 
@@ -5279,7 +5283,6 @@ type RuleCache struct {
 	// directory 时填充路径，如 /xxx/test
 	// path 时填充绝对路径，如 /xxx/test.html
 	// index 时填充 /
-	// default 时填充 "no max-age"
 	// 注意：此字段可能返回 null，表示取不到有效值。
 	RulePaths []*string `json:"RulePaths,omitempty" name:"RulePaths" list`
 
@@ -5289,7 +5292,6 @@ type RuleCache struct {
 	// directory：指定路径生效
 	// path：指定绝对路径生效
 	// index：首页
-	// default: 源站无max-age时生效
 	// 注意：此字段可能返回 null，表示取不到有效值。
 	RuleType *string `json:"RuleType,omitempty" name:"RuleType"`
 

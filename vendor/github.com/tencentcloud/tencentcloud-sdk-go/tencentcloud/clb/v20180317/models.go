@@ -580,6 +580,10 @@ type Cluster struct {
 	// 集群所在的可用区
 	// 注意：此字段可能返回 null，表示取不到有效值。
 	ClustersZone *ClustersZone `json:"ClustersZone,omitempty" name:"ClustersZone"`
+
+	// 集群版本
+	// 注意：此字段可能返回 null，表示取不到有效值。
+	ClustersVersion *string `json:"ClustersVersion,omitempty" name:"ClustersVersion"`
 }
 
 type ClusterItem struct {
@@ -635,6 +639,9 @@ type CreateClsLogSetRequest struct {
 
 	// 日志集的名字，不能和cls其他日志集重名。不填默认为clb_logset。
 	LogsetName *string `json:"LogsetName,omitempty" name:"LogsetName"`
+
+	// 日志集类型，ACCESS：访问日志，HEALTH：健康检查日志，默认ACCESS。
+	LogsetType *string `json:"LogsetType,omitempty" name:"LogsetType"`
 }
 
 func (r *CreateClsLogSetRequest) ToJsonString() string {
@@ -807,6 +814,10 @@ type CreateLoadBalancerRequest struct {
 	// Stgw独占集群的标签。
 	ClusterTag *string `json:"ClusterTag,omitempty" name:"ClusterTag"`
 
+	// 仅适用于公网负载均衡。设置跨可用区容灾时的备可用区ID，例如 100001 或 ap-guangzhou-1
+	// 注：备可用区是主可用区故障后，需要承载流量的可用区。可通过 DescribeMasterZones 接口查询一个地域的主/备可用区的列表。
+	SlaveZoneId *string `json:"SlaveZoneId,omitempty" name:"SlaveZoneId"`
+
 	// EIP 的唯一 ID，形如：eip-11112222，仅适用于内网负载均衡绑定EIP。
 	EipAddressId *string `json:"EipAddressId,omitempty" name:"EipAddressId"`
 }
@@ -975,6 +986,9 @@ type CreateTopicRequest struct {
 
 	// 主题分区Partition的数量，不传参默认创建1个，最大创建允许10个，分裂/合并操作会改变分区数量，整体上限50个。
 	PartitionCount *uint64 `json:"PartitionCount,omitempty" name:"PartitionCount"`
+
+	// 日志类型，ACCESS：访问日志，HEALTH：健康检查日志，默认ACCESS。
+	TopicType *string `json:"TopicType,omitempty" name:"TopicType"`
 }
 
 func (r *CreateTopicRequest) ToJsonString() string {
@@ -1673,6 +1687,9 @@ type DescribeClsLogSetResponse struct {
 		// 日志集的 ID。
 		LogsetId *string `json:"LogsetId,omitempty" name:"LogsetId"`
 
+		// 健康检查日志集的 ID。
+		HealthLogsetId *string `json:"HealthLogsetId,omitempty" name:"HealthLogsetId"`
+
 		// 唯一请求 ID，每次请求都会返回。定位问题时需要提供该次请求的 RequestId。
 		RequestId *string `json:"RequestId,omitempty" name:"RequestId"`
 	} `json:"Response"`
@@ -1983,7 +2000,7 @@ func (r *DescribeLoadBalancersDetailResponse) FromJsonString(s string) error {
 type DescribeLoadBalancersRequest struct {
 	*tchttp.BaseRequest
 
-	// 负载均衡实例 ID。
+	// 负载均衡实例ID。
 	LoadBalancerIds []*string `json:"LoadBalancerIds,omitempty" name:"LoadBalancerIds" list`
 
 	// 负载均衡实例的网络类型：
@@ -2008,7 +2025,7 @@ type DescribeLoadBalancersRequest struct {
 	// 负载均衡绑定的后端服务的内网 IP。
 	BackendPrivateIps []*string `json:"BackendPrivateIps,omitempty" name:"BackendPrivateIps" list`
 
-	// 数据偏移量，默认为 0。
+	// 数据偏移量，默认为0。
 	Offset *int64 `json:"Offset,omitempty" name:"Offset"`
 
 	// 返回负载均衡实例的数量，默认为20，最大值为100。
@@ -2033,10 +2050,10 @@ type DescribeLoadBalancersRequest struct {
 	// 基础网络可传入'0'。
 	VpcId *string `json:"VpcId,omitempty" name:"VpcId"`
 
-	// 安全组ID，如 sg-m1cc9123
+	// 安全组ID，如 sg-m1cc****。
 	SecurityGroup *string `json:"SecurityGroup,omitempty" name:"SecurityGroup"`
 
-	// 主可用区ID，如 ："100001" （对应的是广州一区）
+	// 主可用区ID，如 ："100001" （对应的是广州一区）。
 	MasterZone *string `json:"MasterZone,omitempty" name:"MasterZone"`
 
 	// 每次请求的`Filters`的上限为10，`Filter.Values`的上限为100。详细的过滤条件如下：
@@ -2045,6 +2062,8 @@ type DescribeLoadBalancersRequest struct {
 	// <li> tag-key - String - 是否必填：否 - （过滤条件）按照 CLB 标签的键过滤。</li>
 	// <li> tag:tag-key - String - 是否必填：否 - （过滤条件）按照CLB标签键值对进行过滤，tag-key使用具体的标签键进行替换。</li>
 	// <li> function-name - String - 是否必填：否 - （过滤条件）按照 CLB 后端绑定的SCF云函数的函数名称过滤。</li>
+	// <li> function-name - String - 是否必填：否 - （过滤条件）按照 CLB 后端绑定的SCF云函数的函数名称过滤。</li>
+	// <li> vip-isp - String - 是否必填：否 - （过滤条件）按照 CLB VIP的运营商类型过滤，如："BGP","INTERNAL","CMCC","CTCC","CUCC"等。</li>
 	Filters []*Filter `json:"Filters,omitempty" name:"Filters" list`
 }
 
@@ -2892,6 +2911,14 @@ type LoadBalancer struct {
 	// CLB是否为NFV，空：不是，l7nfv：七层是NFV。
 	// 注意：此字段可能返回 null，表示取不到有效值。
 	NfvInfo *string `json:"NfvInfo,omitempty" name:"NfvInfo"`
+
+	// 负载均衡日志服务(CLS)的健康检查日志集ID
+	// 注意：此字段可能返回 null，表示取不到有效值。
+	HealthLogSetId *string `json:"HealthLogSetId,omitempty" name:"HealthLogSetId"`
+
+	// 负载均衡日志服务(CLS)的健康检查日志主题ID
+	// 注意：此字段可能返回 null，表示取不到有效值。
+	HealthLogTopicId *string `json:"HealthLogTopicId,omitempty" name:"HealthLogTopicId"`
 }
 
 type LoadBalancerDetail struct {
@@ -4046,14 +4073,17 @@ type RuleTargets struct {
 type SetLoadBalancerClsLogRequest struct {
 	*tchttp.BaseRequest
 
-	// 负载均衡实例 ID
+	// 负载均衡实例 ID。
 	LoadBalancerId *string `json:"LoadBalancerId,omitempty" name:"LoadBalancerId"`
 
-	// 日志服务(CLS)的日志集ID
+	// 日志服务(CLS)的日志集ID。
 	LogSetId *string `json:"LogSetId,omitempty" name:"LogSetId"`
 
-	// 日志服务(CLS)的日志主题ID
+	// 日志服务(CLS)的日志主题ID。
 	LogTopicId *string `json:"LogTopicId,omitempty" name:"LogTopicId"`
+
+	// 日志类型，ACCESS：访问日志，HEALTH：健康检查日志，默认ACCESS。
+	LogType *string `json:"LogType,omitempty" name:"LogType"`
 }
 
 func (r *SetLoadBalancerClsLogRequest) ToJsonString() string {
@@ -4255,6 +4285,10 @@ type TargetGroupBackend struct {
 	// 弹性网卡唯一ID
 	// 注意：此字段可能返回 null，表示取不到有效值。
 	EniId *string `json:"EniId,omitempty" name:"EniId"`
+
+	// 后端服务的可用区ID
+	// 注意：此字段可能返回 null，表示取不到有效值。
+	ZoneId *uint64 `json:"ZoneId,omitempty" name:"ZoneId"`
 }
 
 type TargetGroupInfo struct {

@@ -211,6 +211,9 @@ type CreateDBInstancesRequest struct {
 
 	// 实例需要绑定的Tag信息，默认为空
 	TagList []*Tag `json:"TagList,omitempty" name:"TagList" list`
+
+	// 安全组id
+	SecurityGroupIds []*string `json:"SecurityGroupIds,omitempty" name:"SecurityGroupIds" list`
 }
 
 func (r *CreateDBInstancesRequest) ToJsonString() string {
@@ -308,6 +311,9 @@ type CreateReadOnlyDBInstanceRequest struct {
 
 	// 实例需要绑定的Tag信息，默认为空
 	TagList *Tag `json:"TagList,omitempty" name:"TagList"`
+
+	// 安全组id
+	SecurityGroupIds []*string `json:"SecurityGroupIds,omitempty" name:"SecurityGroupIds" list`
 }
 
 func (r *CreateReadOnlyDBInstanceRequest) ToJsonString() string {
@@ -378,6 +384,9 @@ type CreateReadOnlyGroupRequest struct {
 
 	// 延迟剔除最小保留实例数
 	MinDelayEliminateReserve *uint64 `json:"MinDelayEliminateReserve,omitempty" name:"MinDelayEliminateReserve"`
+
+	// 安全组id
+	SecurityGroupIds []*string `json:"SecurityGroupIds,omitempty" name:"SecurityGroupIds" list`
 }
 
 func (r *CreateReadOnlyGroupRequest) ToJsonString() string {
@@ -606,6 +615,10 @@ type DBInstance struct {
 	// 只读实例在只读组中的状态
 	// 注意：此字段可能返回 null，表示取不到有效值。
 	StatusInReadonlyGroup *string `json:"StatusInReadonlyGroup,omitempty" name:"StatusInReadonlyGroup"`
+
+	// 下线时间
+	// 注意：此字段可能返回 null，表示取不到有效值。
+	OfflineTime *string `json:"OfflineTime,omitempty" name:"OfflineTime"`
 }
 
 type DBInstanceNetInfo struct {
@@ -1361,7 +1374,7 @@ func (r *DescribeZonesResponse) FromJsonString(s string) error {
 type DestroyDBInstanceRequest struct {
 	*tchttp.BaseRequest
 
-	// 待删除实例标识符
+	// 待下线实例ID
 	DBInstanceId *string `json:"DBInstanceId,omitempty" name:"DBInstanceId"`
 }
 
@@ -1389,6 +1402,49 @@ func (r *DestroyDBInstanceResponse) ToJsonString() string {
 }
 
 func (r *DestroyDBInstanceResponse) FromJsonString(s string) error {
+    return json.Unmarshal([]byte(s), &r)
+}
+
+type DisIsolateDBInstancesRequest struct {
+	*tchttp.BaseRequest
+
+	// 资源ID列表
+	DBInstanceIdSet []*string `json:"DBInstanceIdSet,omitempty" name:"DBInstanceIdSet" list`
+
+	// 包年包月实例解隔离时购买时常 以月为单位
+	Period *int64 `json:"Period,omitempty" name:"Period"`
+
+	// 是否使用代金券
+	AutoVoucher *bool `json:"AutoVoucher,omitempty" name:"AutoVoucher"`
+
+	// 代金券id列表
+	VoucherIds []*string `json:"VoucherIds,omitempty" name:"VoucherIds" list`
+}
+
+func (r *DisIsolateDBInstancesRequest) ToJsonString() string {
+    b, _ := json.Marshal(r)
+    return string(b)
+}
+
+func (r *DisIsolateDBInstancesRequest) FromJsonString(s string) error {
+    return json.Unmarshal([]byte(s), &r)
+}
+
+type DisIsolateDBInstancesResponse struct {
+	*tchttp.BaseResponse
+	Response *struct {
+
+		// 唯一请求 ID，每次请求都会返回。定位问题时需要提供该次请求的 RequestId。
+		RequestId *string `json:"RequestId,omitempty" name:"RequestId"`
+	} `json:"Response"`
+}
+
+func (r *DisIsolateDBInstancesResponse) ToJsonString() string {
+    b, _ := json.Marshal(r)
+    return string(b)
+}
+
+func (r *DisIsolateDBInstancesResponse) FromJsonString(s string) error {
     return json.Unmarshal([]byte(s), &r)
 }
 
@@ -1609,6 +1665,40 @@ func (r *InquiryPriceUpgradeDBInstanceResponse) ToJsonString() string {
 }
 
 func (r *InquiryPriceUpgradeDBInstanceResponse) FromJsonString(s string) error {
+    return json.Unmarshal([]byte(s), &r)
+}
+
+type IsolateDBInstancesRequest struct {
+	*tchttp.BaseRequest
+
+	// 实例ID集合
+	DBInstanceIdSet []*string `json:"DBInstanceIdSet,omitempty" name:"DBInstanceIdSet" list`
+}
+
+func (r *IsolateDBInstancesRequest) ToJsonString() string {
+    b, _ := json.Marshal(r)
+    return string(b)
+}
+
+func (r *IsolateDBInstancesRequest) FromJsonString(s string) error {
+    return json.Unmarshal([]byte(s), &r)
+}
+
+type IsolateDBInstancesResponse struct {
+	*tchttp.BaseResponse
+	Response *struct {
+
+		// 唯一请求 ID，每次请求都会返回。定位问题时需要提供该次请求的 RequestId。
+		RequestId *string `json:"RequestId,omitempty" name:"RequestId"`
+	} `json:"Response"`
+}
+
+func (r *IsolateDBInstancesResponse) ToJsonString() string {
+    b, _ := json.Marshal(r)
+    return string(b)
+}
+
+func (r *IsolateDBInstancesResponse) FromJsonString(s string) error {
     return json.Unmarshal([]byte(s), &r)
 }
 

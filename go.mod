@@ -20,3 +20,5 @@ require (
 	github.com/zclconf/go-cty v1.4.2 // indirect
 	golang.org/x/sys v0.0.0-20200523222454-059865788121 // indirect
 )
+
+replace github.com/tencentcloud/tencentcloud-sdk-go v1.0.137 => github.com/Shopify/tencentcloud-sdk-go v1.0.140-1

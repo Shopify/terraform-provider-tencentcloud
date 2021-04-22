@@ -537,7 +537,7 @@ func NewDescribeBaseMetricsResponse() (response *DescribeBaseMetricsResponse) {
     return
 }
 
-// 获取基础指标详情
+// 获取基础指标属性
 func (c *Client) DescribeBaseMetrics(request *DescribeBaseMetricsRequest) (response *DescribeBaseMetricsResponse, err error) {
     if request == nil {
         request = NewDescribeBaseMetricsRequest()
@@ -866,7 +866,7 @@ func NewModifyAlarmPolicyConditionResponse() (response *ModifyAlarmPolicyConditi
     return
 }
 
-// 编辑告警策略触发条件
+// 修改告警策略触发条件
 func (c *Client) ModifyAlarmPolicyCondition(request *ModifyAlarmPolicyConditionRequest) (response *ModifyAlarmPolicyConditionResponse, err error) {
     if request == nil {
         request = NewModifyAlarmPolicyConditionRequest()

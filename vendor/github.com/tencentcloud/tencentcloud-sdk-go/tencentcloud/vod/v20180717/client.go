@@ -70,6 +70,31 @@ func (c *Client) ApplyUpload(request *ApplyUploadRequest) (response *ApplyUpload
     return
 }
 
+func NewAttachMediaSubtitlesRequest() (request *AttachMediaSubtitlesRequest) {
+    request = &AttachMediaSubtitlesRequest{
+        BaseRequest: &tchttp.BaseRequest{},
+    }
+    request.Init().WithApiInfo("vod", APIVersion, "AttachMediaSubtitles")
+    return
+}
+
+func NewAttachMediaSubtitlesResponse() (response *AttachMediaSubtitlesResponse) {
+    response = &AttachMediaSubtitlesResponse{
+        BaseResponse: &tchttp.BaseResponse{},
+    }
+    return
+}
+
+// 关联媒资字幕，将指定的字幕关联到转自适应码流模板号对应的媒体输出文件中（或解除关联）。
+func (c *Client) AttachMediaSubtitles(request *AttachMediaSubtitlesRequest) (response *AttachMediaSubtitlesResponse, err error) {
+    if request == nil {
+        request = NewAttachMediaSubtitlesRequest()
+    }
+    response = NewAttachMediaSubtitlesResponse()
+    err = c.Send(request, response)
+    return
+}
+
 func NewCommitUploadRequest() (request *CommitUploadRequest) {
     request = &CommitUploadRequest{
         BaseRequest: &tchttp.BaseRequest{},
@@ -1334,6 +1359,32 @@ func (c *Client) DescribeDailyPlayStatFileList(request *DescribeDailyPlayStatFil
     return
 }
 
+func NewDescribeDrmDataKeyRequest() (request *DescribeDrmDataKeyRequest) {
+    request = &DescribeDrmDataKeyRequest{
+        BaseRequest: &tchttp.BaseRequest{},
+    }
+    request.Init().WithApiInfo("vod", APIVersion, "DescribeDrmDataKey")
+    return
+}
+
+func NewDescribeDrmDataKeyResponse() (response *DescribeDrmDataKeyResponse) {
+    response = &DescribeDrmDataKeyResponse{
+        BaseResponse: &tchttp.BaseResponse{},
+    }
+    return
+}
+
+// 本 API 是 [旧版本加密](https://cloud.tencent.com/document/product/266/9638) 中[DescribeDrmDataKey 的 API 2017 接口](https://cloud.tencent.com/document/product/266/9643)的升级版本。
+// 如果您是新接入点播加密的用户，不要使用该 API。请参考[视频加密综述](https://cloud.tencent.com/document/product/266/45552)使用。
+func (c *Client) DescribeDrmDataKey(request *DescribeDrmDataKeyRequest) (response *DescribeDrmDataKeyResponse, err error) {
+    if request == nil {
+        request = NewDescribeDrmDataKeyRequest()
+    }
+    response = NewDescribeDrmDataKeyResponse()
+    err = c.Send(request, response)
+    return
+}
+
 func NewDescribeEventsStateRequest() (request *DescribeEventsStateRequest) {
     request = &DescribeEventsStateRequest{
         BaseRequest: &tchttp.BaseRequest{},
@@ -1492,6 +1543,33 @@ func (c *Client) DescribePersonSamples(request *DescribePersonSamplesRequest) (r
         request = NewDescribePersonSamplesRequest()
     }
     response = NewDescribePersonSamplesResponse()
+    err = c.Send(request, response)
+    return
+}
+
+func NewDescribePrepaidProductsRequest() (request *DescribePrepaidProductsRequest) {
+    request = &DescribePrepaidProductsRequest{
+        BaseRequest: &tchttp.BaseRequest{},
+    }
+    request.Init().WithApiInfo("vod", APIVersion, "DescribePrepaidProducts")
+    return
+}
+
+func NewDescribePrepaidProductsResponse() (response *DescribePrepaidProductsResponse) {
+    response = &DescribePrepaidProductsResponse{
+        BaseResponse: &tchttp.BaseResponse{},
+    }
+    return
+}
+
+// 该接口可以查询用户已经购买的预付费商品的信息，包括：
+//     1. 商品的类型、生效和失效日期。
+//     2. 商品中每种资源的额度和剩余额度。
+func (c *Client) DescribePrepaidProducts(request *DescribePrepaidProductsRequest) (response *DescribePrepaidProductsResponse, err error) {
+    if request == nil {
+        request = NewDescribePrepaidProductsRequest()
+    }
+    response = NewDescribePrepaidProductsResponse()
     err = c.Send(request, response)
     return
 }
@@ -1778,6 +1856,31 @@ func (c *Client) DescribeTranscodeTemplates(request *DescribeTranscodeTemplatesR
         request = NewDescribeTranscodeTemplatesRequest()
     }
     response = NewDescribeTranscodeTemplatesResponse()
+    err = c.Send(request, response)
+    return
+}
+
+func NewDescribeVodDomainsRequest() (request *DescribeVodDomainsRequest) {
+    request = &DescribeVodDomainsRequest{
+        BaseRequest: &tchttp.BaseRequest{},
+    }
+    request.Init().WithApiInfo("vod", APIVersion, "DescribeVodDomains")
+    return
+}
+
+func NewDescribeVodDomainsResponse() (response *DescribeVodDomainsResponse) {
+    response = &DescribeVodDomainsResponse{
+        BaseResponse: &tchttp.BaseResponse{},
+    }
+    return
+}
+
+// 该接口用于查询点播域名信息列表。
+func (c *Client) DescribeVodDomains(request *DescribeVodDomainsRequest) (response *DescribeVodDomainsResponse, err error) {
+    if request == nil {
+        request = NewDescribeVodDomainsRequest()
+    }
+    response = NewDescribeVodDomainsResponse()
     err = c.Send(request, response)
     return
 }
@@ -2187,7 +2290,7 @@ func NewModifyMediaInfoResponse() (response *ModifyMediaInfoResponse) {
     return
 }
 
-// 修改媒体文件的属性，包括分类、名称、描述、标签、过期时间、打点信息、视频封面等。
+// 修改媒体文件的属性，包括分类、名称、描述、标签、过期时间、打点信息、视频封面、字幕信息等。
 func (c *Client) ModifyMediaInfo(request *ModifyMediaInfoRequest) (response *ModifyMediaInfoResponse, err error) {
     if request == nil {
         request = NewModifyMediaInfoRequest()

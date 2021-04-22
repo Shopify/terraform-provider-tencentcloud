@@ -1357,6 +1357,15 @@ type DatabasePrivilege struct {
 	Database *string `json:"Database,omitempty" name:"Database"`
 }
 
+type DatabasesWithCharacterLists struct {
+
+	// 数据库名
+	DatabaseName *string `json:"DatabaseName,omitempty" name:"DatabaseName"`
+
+	// 字符集类型
+	CharacterSet *string `json:"CharacterSet,omitempty" name:"CharacterSet"`
+}
+
 type DeleteAccountsRequest struct {
 	*tchttp.BaseRequest
 
@@ -1843,6 +1852,9 @@ type DescribeAuditConfigResponse struct {
 
 		// 审计日志存储类型。目前支持的值包括："storage" - 存储型。
 		LogType *string `json:"LogType,omitempty" name:"LogType"`
+
+		// 是否正在关闭审计。目前支持的值包括："false"-否，"true"-是
+		IsClosing *string `json:"IsClosing,omitempty" name:"IsClosing"`
 
 		// 唯一请求 ID，每次请求都会返回。定位问题时需要提供该次请求的 RequestId。
 		RequestId *string `json:"RequestId,omitempty" name:"RequestId"`
@@ -2568,10 +2580,15 @@ type DescribeDBInstanceConfigResponse struct {
 		Zone *string `json:"Zone,omitempty" name:"Zone"`
 
 		// 备库的配置信息。
+	// 注意：此字段可能返回 null，表示取不到有效值。
 		SlaveConfig *SlaveConfig `json:"SlaveConfig,omitempty" name:"SlaveConfig"`
 
 		// 强同步实例第二备库的配置信息。
+	// 注意：此字段可能返回 null，表示取不到有效值。
 		BackupConfig *BackupConfig `json:"BackupConfig,omitempty" name:"BackupConfig"`
+
+		// 是否切换备库。
+		Switched *bool `json:"Switched,omitempty" name:"Switched"`
 
 		// 唯一请求 ID，每次请求都会返回。定位问题时需要提供该次请求的 RequestId。
 		RequestId *string `json:"RequestId,omitempty" name:"RequestId"`
@@ -3114,6 +3131,9 @@ type DescribeDatabasesResponse struct {
 		// 返回的实例信息。
 		Items []*string `json:"Items,omitempty" name:"Items" list`
 
+		// 数据库名以及字符集
+		DatabaseList []*DatabasesWithCharacterLists `json:"DatabaseList,omitempty" name:"DatabaseList" list`
+
 		// 唯一请求 ID，每次请求都会返回。定位问题时需要提供该次请求的 RequestId。
 		RequestId *string `json:"RequestId,omitempty" name:"RequestId"`
 	} `json:"Response"`
@@ -3438,7 +3458,7 @@ type DescribeParamTemplateInfoResponse struct {
 		// 参数模板名称。
 		Name *string `json:"Name,omitempty" name:"Name"`
 
-		// 参数模板描述
+		// 参数模板对应实例版本
 		EngineVersion *string `json:"EngineVersion,omitempty" name:"EngineVersion"`
 
 		// 参数模板中的参数数量
@@ -3446,6 +3466,9 @@ type DescribeParamTemplateInfoResponse struct {
 
 		// 参数详情
 		Items []*ParameterDetail `json:"Items,omitempty" name:"Items" list`
+
+		// 参数模板描述
+		Description *string `json:"Description,omitempty" name:"Description"`
 
 		// 唯一请求 ID，每次请求都会返回。定位问题时需要提供该次请求的 RequestId。
 		RequestId *string `json:"RequestId,omitempty" name:"RequestId"`
@@ -3520,6 +3543,9 @@ type DescribeProjectSecurityGroupsResponse struct {
 
 		// 安全组详情。
 		Groups []*SecurityGroup `json:"Groups,omitempty" name:"Groups" list`
+
+		// 安全组规则数量。
+		TotalCount *int64 `json:"TotalCount,omitempty" name:"TotalCount"`
 
 		// 唯一请求 ID，每次请求都会返回。定位问题时需要提供该次请求的 RequestId。
 		RequestId *string `json:"RequestId,omitempty" name:"RequestId"`
@@ -4595,7 +4621,6 @@ type InstanceInfo struct {
 	ZoneId *int64 `json:"ZoneId,omitempty" name:"ZoneId"`
 
 	// 节点数
-	// 注意：此字段可能返回 null，表示取不到有效值。
 	InstanceNodes *int64 `json:"InstanceNodes,omitempty" name:"InstanceNodes"`
 }
 
@@ -5387,7 +5412,7 @@ type ModifyRoGroupInfoRequest struct {
 	// RO 组内实例的权重。若修改 RO 组的权重模式为用户自定义模式（custom），则必须设置该参数，且需要设置每个 RO 实例的权重值。
 	RoWeightValues []*RoWeightValue `json:"RoWeightValues,omitempty" name:"RoWeightValues" list`
 
-	// 是否重新均衡 RO 组内的 RO 实例的负载。支持值包括：1 - 重新均衡负载；0 - 不重新均衡负载。默认值为 0。注意，设置为重新均衡负载是，RO 组内 RO 实例会有一次数据库连接瞬断，请确保应用程序能重连数据库。
+	// 是否重新均衡 RO 组内的 RO 实例的负载。支持值包括：1 - 重新均衡负载；0 - 不重新均衡负载。默认值为 0。注意，设置为重新均衡负载时，RO 组内 RO 实例会有一次数据库连接瞬断，请确保应用程序能重连数据库。
 	IsBalanceRoLoad *int64 `json:"IsBalanceRoLoad,omitempty" name:"IsBalanceRoLoad"`
 }
 
@@ -6178,13 +6203,13 @@ type SecurityGroup struct {
 
 type SellConfig struct {
 
-	// 设备类型
+	// 设备类型（废弃）
 	Device *string `json:"Device,omitempty" name:"Device"`
 
-	// 售卖规格描述
+	// 售卖规格描述（废弃）
 	Type *string `json:"Type,omitempty" name:"Type"`
 
-	// 实例类型
+	// 实例类型（废弃）
 	CdbType *string `json:"CdbType,omitempty" name:"CdbType"`
 
 	// 内存大小，单位为MB
@@ -6214,11 +6239,19 @@ type SellConfig struct {
 	// 应用场景描述
 	Info *string `json:"Info,omitempty" name:"Info"`
 
-	// 状态值
+	// 状态值，0 表示该规格对外售卖
 	Status *int64 `json:"Status,omitempty" name:"Status"`
 
-	// 标签值
+	// 标签值（废弃）
 	Tag *int64 `json:"Tag,omitempty" name:"Tag"`
+
+	// 实例类型，可能的取值范围有：UNIVERSAL (通用型), EXCLUSIVE (独享型), BASIC (基础型)
+	// 注意：此字段可能返回 null，表示取不到有效值。
+	DeviceType *string `json:"DeviceType,omitempty" name:"DeviceType"`
+
+	// 实例类型描述，可能的取值范围有：通用型， 独享型， 基础型
+	// 注意：此字段可能返回 null，表示取不到有效值。
+	DeviceTypeName *string `json:"DeviceTypeName,omitempty" name:"DeviceTypeName"`
 }
 
 type SellType struct {

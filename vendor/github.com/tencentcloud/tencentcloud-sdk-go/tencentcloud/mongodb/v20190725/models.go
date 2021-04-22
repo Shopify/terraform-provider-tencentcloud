@@ -60,6 +60,42 @@ func (r *AssignProjectResponse) FromJsonString(s string) error {
     return json.Unmarshal([]byte(s), &r)
 }
 
+type BackupDownloadTask struct {
+
+	// 任务创建时间
+	CreateTime *string `json:"CreateTime,omitempty" name:"CreateTime"`
+
+	// 备份文件名
+	BackupName *string `json:"BackupName,omitempty" name:"BackupName"`
+
+	// 分片名称
+	ReplicaSetId *string `json:"ReplicaSetId,omitempty" name:"ReplicaSetId"`
+
+	// 备份数据大小，单位为字节
+	BackupSize *int64 `json:"BackupSize,omitempty" name:"BackupSize"`
+
+	// 任务状态。0-等待执行，1-正在下载，2-下载完成，3-下载失败，4-等待重试
+	Status *int64 `json:"Status,omitempty" name:"Status"`
+
+	// 任务进度百分比
+	Percent *int64 `json:"Percent,omitempty" name:"Percent"`
+
+	// 耗时，单位为秒
+	TimeSpend *int64 `json:"TimeSpend,omitempty" name:"TimeSpend"`
+
+	// 备份数据下载链接
+	Url *string `json:"Url,omitempty" name:"Url"`
+}
+
+type BackupDownloadTaskStatus struct {
+
+	// 分片名
+	ReplicaSetId *string `json:"ReplicaSetId,omitempty" name:"ReplicaSetId"`
+
+	// 任务当前状态。0-等待执行，1-正在下载，2-下载完成，3-下载失败，4-等待重试
+	Status *int64 `json:"Status,omitempty" name:"Status"`
+}
+
 type BackupFile struct {
 
 	// 备份文件所属的副本集/分片ID
@@ -155,6 +191,49 @@ func (r *CreateBackupDBInstanceResponse) FromJsonString(s string) error {
     return json.Unmarshal([]byte(s), &r)
 }
 
+type CreateBackupDownloadTaskRequest struct {
+	*tchttp.BaseRequest
+
+	// 实例ID，格式如：cmgo-p8vnipr5。与云数据库控制台页面中显示的实例ID相同
+	InstanceId *string `json:"InstanceId,omitempty" name:"InstanceId"`
+
+	// 要下载的备份文件名，可通过DescribeDBBackups接口获取
+	BackupName *string `json:"BackupName,omitempty" name:"BackupName"`
+
+	// 下载备份的分片列表
+	BackupSets []*ReplicaSetInfo `json:"BackupSets,omitempty" name:"BackupSets" list`
+}
+
+func (r *CreateBackupDownloadTaskRequest) ToJsonString() string {
+    b, _ := json.Marshal(r)
+    return string(b)
+}
+
+func (r *CreateBackupDownloadTaskRequest) FromJsonString(s string) error {
+    return json.Unmarshal([]byte(s), &r)
+}
+
+type CreateBackupDownloadTaskResponse struct {
+	*tchttp.BaseResponse
+	Response *struct {
+
+		// 下载任务状态
+		Tasks []*BackupDownloadTaskStatus `json:"Tasks,omitempty" name:"Tasks" list`
+
+		// 唯一请求 ID，每次请求都会返回。定位问题时需要提供该次请求的 RequestId。
+		RequestId *string `json:"RequestId,omitempty" name:"RequestId"`
+	} `json:"Response"`
+}
+
+func (r *CreateBackupDownloadTaskResponse) ToJsonString() string {
+    b, _ := json.Marshal(r)
+    return string(b)
+}
+
+func (r *CreateBackupDownloadTaskResponse) FromJsonString(s string) error {
+    return json.Unmarshal([]byte(s), &r)
+}
+
 type CreateDBInstanceHourRequest struct {
 	*tchttp.BaseRequest
 
@@ -191,7 +270,7 @@ type CreateDBInstanceHourRequest struct {
 	// 私有网络下的子网ID，如果设置了 VpcId，则 SubnetId必填
 	SubnetId *string `json:"SubnetId,omitempty" name:"SubnetId"`
 
-	// 实例密码，不设置该参数则需要在创建完成后通过设置密码接口初始化实例密码。密码必须是8-16位字符，且至少包含字母、数字和字符 !@#%^*() 中的两种
+	// 实例密码，不设置该参数则默认密码规则为 实例ID+"@"+主账户uin。举例实例id为cmgo-higv73ed，uin为100000001，则默认密码为"cmgo-higv73ed@100000001"。密码必须是8-16位字符，且至少包含字母、数字和字符 !@#%^*() 中的两种
 	Password *string `json:"Password,omitempty" name:"Password"`
 
 	// 项目ID，不设置为默认项目
@@ -285,7 +364,7 @@ type CreateDBInstanceRequest struct {
 	// 私有网络下的子网 ID，如果设置了 UniqVpcId，则 UniqSubnetId 必填，请使用 查询子网列表
 	SubnetId *string `json:"SubnetId,omitempty" name:"SubnetId"`
 
-	// 实例密码，不设置该参数则需要在创建完成后通过设置密码接口初始化实例密码。密码必须是8-16位字符，且至少包含字母、数字和字符 !@#%^*() 中的两种
+	// 实例密码，不设置该参数则默认密码规则为 实例ID+"@"+主账户uin。举例实例id为cmgo-higv73ed，uin为100000001，则默认密码为"cmgo-higv73ed@100000001"。密码必须是8-16位字符，且至少包含字母、数字和字符 !@#%^*() 中的两种
 	Password *string `json:"Password,omitempty" name:"Password"`
 
 	// 实例标签信息
@@ -479,6 +558,70 @@ func (r *DescribeBackupAccessResponse) ToJsonString() string {
 }
 
 func (r *DescribeBackupAccessResponse) FromJsonString(s string) error {
+    return json.Unmarshal([]byte(s), &r)
+}
+
+type DescribeBackupDownloadTaskRequest struct {
+	*tchttp.BaseRequest
+
+	// 实例ID，格式如：cmgo-p8vnipr5。与云数据库控制台页面中显示的实例ID相同
+	InstanceId *string `json:"InstanceId,omitempty" name:"InstanceId"`
+
+	// 备份文件名，用来过滤指定文件的下载任务
+	BackupName *string `json:"BackupName,omitempty" name:"BackupName"`
+
+	// 指定要查询任务的时间范围，StartTime指定开始时间，不填默认不限制开始时间
+	StartTime *string `json:"StartTime,omitempty" name:"StartTime"`
+
+	// 指定要查询任务的时间范围，EndTime指定结束时间，不填默认不限制结束时间
+	EndTime *string `json:"EndTime,omitempty" name:"EndTime"`
+
+	// 此次查询返回的条数，取值范围为1-100，默认为20
+	Limit *int64 `json:"Limit,omitempty" name:"Limit"`
+
+	// 指定此次查询返回的页数，默认为0
+	Offset *int64 `json:"Offset,omitempty" name:"Offset"`
+
+	// 排序字段，取值为createTime，finishTime两种，默认为createTime
+	OrderBy *string `json:"OrderBy,omitempty" name:"OrderBy"`
+
+	// 排序方式，取值为asc，desc两种，默认desc
+	OrderByType *string `json:"OrderByType,omitempty" name:"OrderByType"`
+
+	// 根据任务状态过滤。0-等待执行，1-正在下载，2-下载完成，3-下载失败，4-等待重试。不填默认返回所有类型
+	Status []*int64 `json:"Status,omitempty" name:"Status" list`
+}
+
+func (r *DescribeBackupDownloadTaskRequest) ToJsonString() string {
+    b, _ := json.Marshal(r)
+    return string(b)
+}
+
+func (r *DescribeBackupDownloadTaskRequest) FromJsonString(s string) error {
+    return json.Unmarshal([]byte(s), &r)
+}
+
+type DescribeBackupDownloadTaskResponse struct {
+	*tchttp.BaseResponse
+	Response *struct {
+
+		// 满足查询条件的所有条数
+		TotalCount *int64 `json:"TotalCount,omitempty" name:"TotalCount"`
+
+		// 下载任务列表
+		Tasks []*BackupDownloadTask `json:"Tasks,omitempty" name:"Tasks" list`
+
+		// 唯一请求 ID，每次请求都会返回。定位问题时需要提供该次请求的 RequestId。
+		RequestId *string `json:"RequestId,omitempty" name:"RequestId"`
+	} `json:"Response"`
+}
+
+func (r *DescribeBackupDownloadTaskResponse) ToJsonString() string {
+    b, _ := json.Marshal(r)
+    return string(b)
+}
+
+func (r *DescribeBackupDownloadTaskResponse) FromJsonString(s string) error {
     return json.Unmarshal([]byte(s), &r)
 }
 
@@ -1481,6 +1624,12 @@ func (r *RenewDBInstancesResponse) FromJsonString(s string) error {
     return json.Unmarshal([]byte(s), &r)
 }
 
+type ReplicaSetInfo struct {
+
+	// 分片名称
+	ReplicaSetId *string `json:"ReplicaSetId,omitempty" name:"ReplicaSetId"`
+}
+
 type ResetDBInstancePasswordRequest struct {
 	*tchttp.BaseRequest
 
@@ -1574,7 +1723,7 @@ type SpecItem struct {
 	// 规格有效标志，取值：0-停止售卖，1-开放售卖
 	Status *uint64 `json:"Status,omitempty" name:"Status"`
 
-	// 规格有效标志，取值：0-停止售卖，1-开放售卖
+	// 计算资源规格，单位为CPU核心数
 	Cpu *uint64 `json:"Cpu,omitempty" name:"Cpu"`
 
 	// 内存规格，单位为MB

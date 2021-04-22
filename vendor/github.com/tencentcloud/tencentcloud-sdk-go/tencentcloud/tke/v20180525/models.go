@@ -3299,7 +3299,7 @@ type LoginSettings struct {
 
 type ManuallyAdded struct {
 
-	// 加入中节的点数量
+	// 加入中的节点数量
 	Joining *int64 `json:"Joining,omitempty" name:"Joining"`
 
 	// 初始化中的节点数量
@@ -3638,7 +3638,7 @@ type NodePool struct {
 	// ClusterInstanceId 集群实例id
 	ClusterInstanceId *string `json:"ClusterInstanceId,omitempty" name:"ClusterInstanceId"`
 
-	// LifeState 状态
+	// LifeState 状态，当前节点池生命周期状态包括：creating，normal，updating，deleting，deleted
 	LifeState *string `json:"LifeState,omitempty" name:"LifeState"`
 
 	// LaunchConfigurationId 配置
@@ -3683,6 +3683,14 @@ type NodePool struct {
 	// 镜像id
 	// 注意：此字段可能返回 null，表示取不到有效值。
 	ImageId *string `json:"ImageId,omitempty" name:"ImageId"`
+
+	// 集群属于节点podCIDR大小自定义模式时，节点池需要带上pod数量属性
+	// 注意：此字段可能返回 null，表示取不到有效值。
+	DesiredPodNum *int64 `json:"DesiredPodNum,omitempty" name:"DesiredPodNum"`
+
+	// 用户自定义脚本
+	// 注意：此字段可能返回 null，表示取不到有效值。
+	UserScript *string `json:"UserScript,omitempty" name:"UserScript"`
 }
 
 type NodePoolOption struct {
@@ -4332,6 +4340,9 @@ type UpdateClusterVersionRequest struct {
 
 	// 需要升级到的版本
 	DstVersion *string `json:"DstVersion,omitempty" name:"DstVersion"`
+
+	// 集群自定义参数
+	ExtraArgs *ClusterExtraArgs `json:"ExtraArgs,omitempty" name:"ExtraArgs"`
 
 	// 可容忍的最大不可用pod数目
 	MaxNotReadyPercent *float64 `json:"MaxNotReadyPercent,omitempty" name:"MaxNotReadyPercent"`
