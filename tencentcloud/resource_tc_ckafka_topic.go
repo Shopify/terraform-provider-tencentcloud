@@ -69,7 +69,7 @@ func resourceTencentCloudCkafkaTopic() *schema.Resource {
 			"partition_num": {
 				Type:         schema.TypeInt,
 				Required:     true,
-				ValidateFunc: validateIntegerInRange(1, 24),
+				ValidateFunc: validateIntegerInRange(1, 500),
 				Description:  "The number of partition.",
 			},
 			"replica_num": {
