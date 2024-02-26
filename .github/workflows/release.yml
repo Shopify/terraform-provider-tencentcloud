@@ -1,0 +1,64 @@
+name: Release
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: shopify-ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read the version
+        id: get_version
+        run: echo "version=v$(cat VERSION)" >> "$GITHUB_OUTPUT"
+
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          EXISTS=$(git tag --list | grep -Fxq "${{ steps.get_version.outputs.version }}" && echo true || echo false)
+          echo "exists=$EXISTS" >> "$GITHUB_OUTPUT"
+
+      - name: Create Tag
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          git tag ${{ steps.get_version.outputs.version }}
+          git push origin ${{ steps.get_version.outputs.version }}
+
+      - name: Import GPG key
+        if: steps.check_tag.outputs.exists == 'false'
+        uses: crazy-max/ghaction-import-gpg@v6
+        id: import_gpg
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+
+      - name: Write Google Service Account to File
+        if: steps.check_tag.outputs.exists == 'false'
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.TERRAFORM_PRIVATE_REGISTRY_PUBLISHER_KEY }}
+        run: |
+          echo "$GOOGLE_APPLICATION_CREDENTIALS" > service-account.json
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+
+      - name: Run GoReleaser
+        if: steps.check_tag.outputs.exists == 'false'
+        uses: goreleaser/goreleaser-action@v5
+        with:
+          args: release --clean --skip=validate
+        env:
+          GORELEASER_CURRENT_TAG: ${{ steps.get_version.outputs.version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+          GOOGLE_APPLICATION_CREDENTIALS: service-account.json
+
